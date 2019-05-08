@@ -2,6 +2,9 @@
 Created on May 6, 2019
 
 @author: baumj
+
+Stationary Markov Chain model calculations
+given P transition matrix from Wind Power Paper
 '''
 
 import numpy as np
@@ -29,7 +32,6 @@ alpha[0,0] = 1
 #print multistep distribution
 res = PrettyTable()
 res.field_names = ["Step","P(S0)","P(S1)","P(S2)","P(S3)","P(S4)", "5", "6", "7", "8", "9","10","11"]
-#res.float_format = "%.3f"
 res.set_style(MSWORD_FRIENDLY)
 
 for i in range(0,51,5):
@@ -53,7 +55,7 @@ print("Steady State distribution solving a linear equation:")
 print(px)
 
 speed = np.linspace(1,12,12)
-markerline, stemlines, baseline = plt.stem(speed, px, 'b-', basefmt='k-')  #use linear eqn result instead of row[1:]
+markerline, stemlines, baseline = plt.stem(speed, px, 'b-', basefmt='k-')  
 plt.xticks(speed)
 plt.xlabel('Speed (m/s)')
 plt.ylabel('Probability')

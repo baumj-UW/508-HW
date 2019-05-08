@@ -19,7 +19,7 @@ Pss = np.array([[22/25, 3/25, 0, 0, 0],\
                [0, 0, 5/25, 11/25, 9/25],\
                [0, 0, 0, 5/25, 20/25]])
 
-Pss_basic = np.array([[3/25, 3/25, 5/25, 5/25, 9/25],\
+Pss_trivial = np.array([[3/25, 3/25, 5/25, 5/25, 9/25],\
                [3/25, 3/25, 5/25, 5/25, 9/25],\
                [3/25, 3/25, 5/25, 5/25, 9/25],\
                [3/25, 3/25, 5/25, 5/25, 9/25],\
@@ -33,3 +33,21 @@ b[5,0] = 1
 px = lstsq(M,b,rcond=None)[0]
 
 print(px)
+
+def MakeP(ss):
+    ## generate P transition matrix given transient probabilities
+    P = np.zeros((len(ss),len(ss)))
+    for i in range(0,len(ss)-1):
+        P[i,i+1] = ss[i+1]
+    for i in range(1,len(ss)):
+        P[i,i-1] = ss[i-1]
+    for i in range(1,len(ss)-1):
+        P[i,i] = 1 - (ss[i-1] + ss[i+1])
+    P[0,0] = 1 - ss[1]
+    P[len(ss)-1,len(ss)-1] = 1 - ss[len(ss)-2]
+    return P
+
+test = MakeP(ss[0])
+
+
+print(test)
