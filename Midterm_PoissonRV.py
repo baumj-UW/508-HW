@@ -3,7 +3,7 @@ Created on May 6, 2019
 
 @author: baumj
 
-Midterm Problem 1:
+Midterm_BWgame Problem 1:
 Show that the  normal distribution is a good
 approximation of Poisson 
 '''
