@@ -4,8 +4,9 @@ Created on May 6, 2019
 @author: baumj
 
 EE 508 - Midterm Problems
+BlackHat WhiteHat game prediction 
 '''
-#from sympy import *
+
 import numpy as np
 from prettytable import PrettyTable
 
@@ -33,7 +34,6 @@ for i in range(0,101,10):
    
 print(res)
 
-#t, w, b, ww, bb = symbols('t w b ww bb')
 R = P[:3,3:]
 Q = P[:3,:3]
 
@@ -41,8 +41,11 @@ N = np.linalg.inv(np.eye(3,3) - Q)
 B = np.matmul(N,R)
 #B 00 = p(W) win, B_01 = P(B) win steady state
 
+print("Probability of White win:",B[0,0])
+print("Probability of Black win:",B[0,1])
+
 c = np.ones((3,1))
 t = np.matmul(N,c)
 #t0 = E[# games until winner declared, starting from tie]
 
-print("working?")
+print("Expected number of games until a winner is declared:",t[0,0])
