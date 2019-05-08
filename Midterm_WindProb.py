@@ -6,7 +6,7 @@ Created on May 6, 2019
 
 import numpy as np
 from numpy.linalg import *
-from prettytable import PrettyTable
+from prettytable import PrettyTable,MSWORD_FRIENDLY, PLAIN_COLUMNS
 import matplotlib.pyplot as plt
 
 P = np.array([[0.371,0.407,0.174,0.036,0.009,0.001,0.001,0.001,0,0,0,0],\
@@ -29,13 +29,16 @@ alpha[0,0] = 1
 #print multistep distribution
 res = PrettyTable()
 res.field_names = ["Step","P(S0)","P(S1)","P(S2)","P(S3)","P(S4)", "5", "6", "7", "8", "9","10","11"]
+#res.float_format = "%.3f"
+res.set_style(MSWORD_FRIENDLY)
 
 for i in range(0,51,5):
     vals = np.matmul(alpha[0],matrix_power(P,i))
     row = vals.tolist()
     row.insert(0,i)
     res.add_row(row)
-   
+
+print("Steady State distribution by iterating from S0")   
 print(res)
 
 
@@ -46,6 +49,9 @@ b = np.zeros((13,1))
 b[12,0] = 1
 px = lstsq(M,b,rcond=None)[0]
 
+print("Steady State distribution solving a linear equation:")
+print(px)
+
 speed = np.linspace(1,12,12)
 markerline, stemlines, baseline = plt.stem(speed, px, 'b-', basefmt='k-')  #use linear eqn result instead of row[1:]
 plt.xticks(speed)
@@ -54,18 +60,12 @@ plt.ylabel('Probability')
 plt.title("Steady-State PMF of Wind Speeds")
 plt.show()
 
-# temp = P.T - np.eye(P.shape[0],P.shape[1])
-# b = np.zeros((13,1))
-# b[12,0] = 1
-# np.insert(temp,12,1,axis=0)
-# A = np.insert(temp,12,1,axis=0)
-# x = np.linalg.solve(A,b)
-# 
-# 
-# 
-# x = P.T - np.eye(P.shape[0],P.shape[1])
-# A = np.insert(x,12,1,axis=0)
+mean = (np.dot((speed-0.5),px))
+var = np.dot((speed-0.5)**2,px) - mean**2
+
+print("PMF statistics:")
+print("Mean:",mean)
+print("Variance:",var)
+print("Standard Deviation:",np.sqrt(var))
 
 
-
-print("working?")
