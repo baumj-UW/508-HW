@@ -47,6 +47,9 @@ def SolveSS(Q):
     px = lstsq(M,b,rcond=None)[0]
     return px[:,0] 
 
+print("stationary probabilities:")
+print("[D1, D2, D3, F, I1, I2, I3, M1, MM1, M2, MM2, M3, MM3]")
+print(SolveSS(Q))
 
     
 #Test Q Steady State
@@ -64,8 +67,8 @@ def CTMC(t, x, Q):
     dxdt = np.matmul(x,Q)
     return dxdt
 
-STEP1 = 1000
-SUB_INT = 500
+STEP1 = 365*5
+SUB_INT = 1000
 eval_times = np.linspace(0,STEP1,SUB_INT)
                        
 P0 = np.zeros(Q.shape[0])
@@ -79,7 +82,19 @@ print(results.y[:,-1])
 
 ## Test sample system
 sampleResults = solve_ivp(lambda t, x:CTMC(t,x,sample),[0,STEP1],[1,0,0])
-print('Results at final time step:')
+print('Sample Results at final time step:')
 print(sampleResults.y[:,-1])
 
+
+## plot the results
+STATES = ['D1','D2','D3','F']
+for (i,s) in enumerate(STATES):
+    plt.plot(results.t,results.y[i],label=s)
+plt.grid(True)
+plt.xlabel('Time (days)')
+plt.ylabel('Prob of being in state')
+plt.legend()
+plt.title("State probabilities over time")
+
+plt.show()
 print('working?')
