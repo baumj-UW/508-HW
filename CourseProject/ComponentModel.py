@@ -67,8 +67,9 @@ def CTMC(t, x, Q):
     dxdt = np.matmul(x,Q)
     return dxdt
 
-STEP1 = 365*5
-SUB_INT = 1000
+YEARS =50
+STEP1 = 365*YEARS
+SUB_INT = round(STEP1/(YEARS/4))
 eval_times = np.linspace(0,STEP1,SUB_INT)
                        
 P0 = np.zeros(Q.shape[0])
@@ -88,13 +89,32 @@ print(sampleResults.y[:,-1])
 
 ## plot the results
 STATES = ['D1','D2','D3','F']
+stateprobfig = plt.figure(1)
 for (i,s) in enumerate(STATES):
     plt.plot(results.t,results.y[i],label=s)
 plt.grid(True)
 plt.xlabel('Time (days)')
 plt.ylabel('Prob of being in state')
 plt.legend()
-plt.title("State probabilities over time")
+plt.title("Component State probabilities over time")
+
+
+
+##reliability function
+#try 3 components in parallel + 1 in series
+P = np.zeros((4,len(results.t)))
+for comp in range(4):
+    P[comp] = results.y[3] #prob that device is in fail state (consider including other states like maintenance?)
+
+#make sure this is elementwise multiplication
+R = (1-P[0])*(1-(P[1])*(P[2])*(P[3])) #from Ross Reliability chapter, p(working)=1-P(fail) for each component 
+
+relfig = plt.figure(2)
+plt.plot(results.t,R)
+plt.grid(True)
+plt.xlabel('Time (days)')
+plt.ylabel('Prob of system failure')
+plt.title("System Reliability")
 
 plt.show()
 print('working?')
