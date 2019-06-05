@@ -14,29 +14,12 @@ from scipy.integrate import solve_ivp #ODE45
 import matplotlib.pyplot as plt
 
 
-## Q matrix based on HV Air-Blast Circuit Breakers (historical data)
-## 13 States [D1, D2, D3, F, I1, I2, I3, M1, MM1, M2, MM2, M3, MM3]
-## Matrix from textbook doesn't align with the given steady state results...
-# Q = np.array([[-0.01,0, 0, 0, 0.01, 0, 0, 0, 0, 0, 0, 0, 0],\
-#               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\
-#               [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],\
-#               [3.044E-04, 0, 0, -3.044E-04, 0, 0, 0, 0, 0, 0, 0, 0, 0],\
-#               [90.0, 0, 0, 0, -100.0, 0, 0, 5.0, 5.0, 0, 0, 0, 0],\
-#               [0, 0, 0, 0, 0, -100.0, 0, 0, 0, 90.0, 10.0, 0, 0],\
-#               [0, 0, 0, 0, 0, 0, -100.0, 0, 0, 0, 0, 10.0, 90.0],\
-#               [99.0, 1.0, 0, 0, 0, 0, 0, -100.0, 0, 0, 0, 0, 0],\
-#               [19.8, 0.2, 0, 0, 0, 0, 0, 0, -20.0, 0, 0, 0, 0],\
-#               [50.0, 44.0, 1.0, 0, 0, 0, 0, 0, 0, -95.0, 0, 0, 0],\
-#               [18.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, -20.0, 0, 0],\
-#               [0, 10.0, 10.0, 0, 0, 0, 0, 0, 0, 0, 0, -100.0, 80.0],\
-#               [18.0, 2.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -20.0]])
-# steady state results from text:
-#[0.542 0.219 0.043 0.195 0 0 0 0 0 0 0 0 0]
 
 #Read Q matrix from csv 
 #current file based on Endrenyi '98 paper
-filepath = "C:/Users/baumj/Documents/UW Courses/EE 508 - Stochastic Processes/Repo/508-HW/CourseProject/CircuitBreakerQMatrix.csv"
-Q = np.genfromtxt(filepath, delimiter=',')
+#filepath = "CircuitBreakerQMatrix_abs.csv"
+# filepath = "TransformerQMatrix_abs.csv"
+# Q = np.genfromtxt(filepath, delimiter=',')
 
 
 def SolveSS(Q):
@@ -47,15 +30,15 @@ def SolveSS(Q):
     px = lstsq(M,b,rcond=None)[0]
     return px[:,0] 
 
-print("stationary probabilities:")
-print("[D1, D2, D3, F, I1, I2, I3, M1, MM1, M2, MM2, M3, MM3]")
-print(SolveSS(Q))
-
-    
+# print("stationary probabilities:")
+# print("[D1, D2, D3, F, I1, I2, I3, M1, MM1, M2, MM2, M3, MM3]")
+# print(SolveSS(Q))
+# 
+#     
 #Test Q Steady State
 #solution: [4/7, 2/7, 1/7]
-sample =  np.array([[-5,4,1],[10,-10,0],[0,4,-4]])
-print(SolveSS(sample))
+# sample =  np.array([[-5,4,1],[10,-10,0],[0,4,-4]])
+# print(SolveSS(sample))
 
 #According to notes:
 #P[t] = np.matmul(P[0],np.exp(Q*t))
@@ -63,40 +46,65 @@ print(SolveSS(sample))
 ## Try solving with ODE
 
 def CTMC(t, x, Q):
-    #x = np.exp(Q*t)
     dxdt = np.matmul(x,Q)
     return dxdt
 
-YEARS =50
-STEP1 = 365*YEARS
-SUB_INT = round(STEP1/(YEARS/4))
-eval_times = np.linspace(0,STEP1,SUB_INT)
-                       
-P0 = np.zeros(Q.shape[0])
-P0[0] = 1 # set initial state as D1 (new)
-results = solve_ivp(lambda t, x: CTMC(t, x, Q),\
-                    [0,STEP1],P0,t_eval=eval_times)  
 
-print('Results at final time step:')
-print(results.y[:,-1])
+def stateProb(Qfile,init_new,eval_times,start_t=0,end_t=10):
+    '''
+    Qfile = filepath of Q matrix
+    Q = square generator matrix
+    init_state = vector of initial state probabilities
+    start_t = start time of simulation, default=0
+    end_t = end time of simulation, default = 10
+        simulation time unit must be the same as Q rates
+        
+    Returns state probabilities over time from Q
+    '''
+    Q = np.genfromtxt(Qfile, delimiter=',')
+   
+    init_state = np.ones(Q.shape[0])
+    if init_new: 
+        init_state[1:] = 0
+    else:
+        init_state = init_state/Q.shape[0]
+        
+    results = solve_ivp(lambda t, x: CTMC(t, x, Q),\
+                        [start_t,end_t],init_state,t_eval=eval_times)      
+    return results
+# 
+# ## turn this into a function then call the function from system model
+# YEARS =300
+# STEP1 = 365*YEARS
+# SUB_INT = 10000#round(STEP1/(YEARS/4))
+# eval_times = np.linspace(0,STEP1,SUB_INT)
+#                        
+# P0 = np.zeros(Q.shape[0])
+# P0[0] = 1 # set initial state as D1 (new)
+# results = solve_ivp(lambda t, x: CTMC(t, x, Q),\
+#                     [0,STEP1],P0,t_eval=eval_times)  
+# 
+# print('Results at final time step:')
+# print(results.y[:,-1])
 
 
 ## Test sample system
-sampleResults = solve_ivp(lambda t, x:CTMC(t,x,sample),[0,STEP1],[1,0,0])
-print('Sample Results at final time step:')
-print(sampleResults.y[:,-1])
+# sampleResults = solve_ivp(lambda t, x:CTMC(t,x,sample),[0,STEP1],[1,0,0])
+# print('Sample Results at final time step:')
+# print(sampleResults.y[:,-1])
 
 
 ## plot the results
-STATES = ['D1','D2','D3','F']
-stateprobfig = plt.figure(1)
-for (i,s) in enumerate(STATES):
-    plt.plot(results.t,results.y[i],label=s)
-plt.grid(True)
-plt.xlabel('Time (days)')
-plt.ylabel('Prob of being in state')
-plt.legend()
-plt.title("Component State probabilities over time")
+def addPlots(results,figNum = 1,comp_name="Component"):
+    STATES = ['D1','D2','D3','F']
+    stateprobfig = plt.figure(figNum)
+    for (i,s) in enumerate(STATES):
+        plt.plot(results.t,results.y[i],label=s)
+    plt.grid(True)
+    plt.xlabel('Time (days)')
+    plt.ylabel('Prob of being in state')
+    plt.legend()
+    plt.title(comp_name + " State probabilities over time")
+    return stateprobfig
 
 #plt.show()  UNCOMMENT TO SHOW PLOT  HERE
-print('working?')

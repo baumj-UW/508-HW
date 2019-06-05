@@ -9,17 +9,28 @@ System Model probability based on Ross - Reliability Chapter
 '''
 
 import numpy as np
-from numpy.linalg import lstsq
+#from numpy.linalg import lstsq
 import matplotlib.pyplot as plt
-from CourseProject.ComponentModel import results
+from CourseProject.ComponentModel import stateProb, addPlots
+from CourseProject.sys_config import *
 
 
 ##reliability function
 #try 3 components in parallel + 1 in series
-P = np.zeros((4,len(results.t)))
-for comp in range(4):
-    P[comp] = results.y[3] #prob that device is in fail state (consider including other states like maintenance?)
+# P = np.zeros((4,len(results.t)))
+# for comp in range(4):
+#     P[comp] = results.y[3] #prob that device is in fail state (consider including other states like maintenance?)
 
+Pxfmr = stateProb(Xfmr_Qfile,NEW_XFMR,eval_times,start_t=SIM_START,end_t=SIM_END)
+Pcbkr = stateProb(Cbkr_Qfile,NEW_CBKR,eval_times,start_t=SIM_START,end_t=SIM_END)
+
+#Plots of component probabilities
+addPlots(Pxfmr,1,"Transformer") 
+addPlots(Pcbkr,2,"Circuit Breaker")
+
+
+P = [Pxfmr.y[3]]*1 + [Pcbkr.y[3]]*3 #failure probs of xfmr in series with 3 parallel cbks
+results = Pxfmr ##just to test
 #make sure this is elementwise multiplication
 R = (1-P[0])*(1-(P[1])*(P[2])*(P[3])) #from Ross Reliability chapter, p(working)=1-P(fail) for each component 
 
@@ -33,7 +44,7 @@ for i in range(len(R)):
 
 #Sum all the numerically-integrated segments for the total MTTF
 MTTF = sum(MTTF_array)/365
-print("The mean time to failure is %.2f years.\n" % MTTF)
+print("The system mean time to failure is %.2f years.\n" % MTTF)
 
 #Reliability of one component
 R1 = (1 - P[0])
@@ -48,9 +59,9 @@ for i in range(len(R1)):
 
 #Sum all the numerically-integrated segments for the total MTTF
 MTTF1 = sum(MTTF_array1)/365
-print("The mean time to failure is %.2f years.\n" % MTTF1)
+print("The component mean time to failure is %.2f years.\n" % MTTF1)
 
-relfig = plt.figure(2)
+relfig = plt.figure(3) #fig num
 plt.plot(results.t,R)
 plt.grid(True)
 plt.xlabel('Time (days)')
