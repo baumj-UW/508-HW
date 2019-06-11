@@ -5,21 +5,15 @@ Created on May 27, 2019
 EE508 - Final Project
 CT Markov Model
 
+Component level model functions
+
 Sample component based on G. Anders "Optimal Maintenance Policies for Power Equipment"
-Section 4.3.2 (p32)
+Section 4.3.2 (p32) and IEEE Goldbook Survey on Industrial power system equipment
 '''
 import numpy as np
 from numpy.linalg import lstsq
 from scipy.integrate import solve_ivp #ODE45 
 import matplotlib.pyplot as plt
-
-
-
-#Read Q matrix from csv 
-#current file based on Endrenyi '98 paper
-#filepath = "CircuitBreakerQMatrix_abs.csv"
-# filepath = "TransformerQMatrix_abs.csv"
-# Q = np.genfromtxt(filepath, delimiter=',')
 
 
 def SolveSS(Q):
@@ -30,20 +24,6 @@ def SolveSS(Q):
     px = lstsq(M,b,rcond=None)[0]
     return px[:,0] 
 
-# print("stationary probabilities:")
-# print("[D1, D2, D3, F, I1, I2, I3, M1, MM1, M2, MM2, M3, MM3]")
-# print(SolveSS(Q))
-# 
-#     
-#Test Q Steady State
-#solution: [4/7, 2/7, 1/7]
-# sample =  np.array([[-5,4,1],[10,-10,0],[0,4,-4]])
-# print(SolveSS(sample))
-
-#According to notes:
-#P[t] = np.matmul(P[0],np.exp(Q*t))
-
-## Try solving with ODE
 
 def CTMC(t, x, Q):
     dxdt = np.matmul(x,Q)
@@ -72,21 +52,6 @@ def stateProb(Qfile,init_new,eval_times,start_t=0,end_t=10):
     results = solve_ivp(lambda t, x: CTMC(t, x, Q),\
                         [start_t,end_t],init_state,t_eval=eval_times)      
     return results
-# 
-# ## turn this into a function then call the function from system model
-# YEARS =300
-# STEP1 = 365*YEARS
-# SUB_INT = 10000#round(STEP1/(YEARS/4))
-# eval_times = np.linspace(0,STEP1,SUB_INT)
-#                        
-# P0 = np.zeros(Q.shape[0])
-# P0[0] = 1 # set initial state as D1 (new)
-# results = solve_ivp(lambda t, x: CTMC(t, x, Q),\
-#                     [0,STEP1],P0,t_eval=eval_times)  
-# 
-# print('Results at final time step:')
-# print(results.y[:,-1])
-
 
 ## Test sample system
 # sampleResults = solve_ivp(lambda t, x:CTMC(t,x,sample),[0,STEP1],[1,0,0])
@@ -96,6 +61,9 @@ def stateProb(Qfile,init_new,eval_times,start_t=0,end_t=10):
 
 ## plot the results
 def addPlots(results,figNum = 1,comp_name="Component"):
+    '''
+    Returns new figure which can be plotted with plt.show()
+    '''    
     STATES = ['D1','D2','D3','F']
     stateprobfig = plt.figure(figNum)
     for (i,s) in enumerate(STATES):
@@ -107,4 +75,3 @@ def addPlots(results,figNum = 1,comp_name="Component"):
     plt.title(comp_name + " State probabilities over time")
     return stateprobfig
 
-#plt.show()  UNCOMMENT TO SHOW PLOT  HERE
