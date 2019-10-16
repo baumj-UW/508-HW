@@ -103,3 +103,6 @@ print("Generated P:",res5)
 print("Check stationary probabilities:",check5)
 print("original",test5[0])
 print("************************")
+
+
+## add note to test git
